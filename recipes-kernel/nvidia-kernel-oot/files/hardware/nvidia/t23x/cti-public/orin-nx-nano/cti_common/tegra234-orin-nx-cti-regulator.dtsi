@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2022, Connect Tech Inc.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <dt-bindings/gpio/tegra234-gpio.h>
+/ {
+        battery_reg: regulator-battery-reg {
+               compatible = "regulator-fixed";
+               regulator-name = "VDD-AC-VAT";
+               regulator-min-microvolt = <5000000>;
+               regulator-max-microvolt = <5000000>;
+               regulator-always-on;
+         };
+	    vdd_5v0_sys: regulator-vdd-5v0-sys {
+            /* Enable is automatic with DC_IN */
+            compatible = "regulator-fixed";
+            regulator-name = "VDD_5V0_SYS";
+            regulator-min-microvolt = <5000000>;
+            regulator-max-microvolt = <5000000>;
+            regulator-always-on;
+        };
+
+        vdd_3v3_pcie: regulator-vdd-3v3-pcie {
+            compatible = "regulator-fixed";
+            regulator-name = "VDD_3V3_PCIE";
+            regulator-min-microvolt = <3300000>;
+            regulator-max-microvolt = <3300000>;
+            regulator-boot-on;
+            regulator-always-on;
+        };
+
+
+        hdr40_vdd_3v3: p3768_vdd_3v3_sys: regulator@101 {
+            /* BUCK_3V3_EN enable is driven by button MCU */
+            compatible = "regulator-fixed";
+            reg = <101>;
+            regulator-name = "VDD_3V3_SYS";
+            regulator-min-microvolt = <3300000>;
+            regulator-max-microvolt = <3300000>;
+            regulator-always-on;
+        };
+        vdd_1v8_hs: regulator-vdd-1v8-hs {
+            /* BUCK_3V3_PG enable is driven by vdd_3v3_sys */
+            compatible = "regulator-fixed";
+            regulator-name = "VDD_1V8_HS";
+            regulator-min-microvolt = <1800000>;
+            regulator-max-microvolt = <1800000>;
+            regulator-always-on;
+        };
+        vdd_1v8_ao: regulator-vdd-1v8-ao {
+            /* BUCK_3V3_PG enable is driven by vdd_3v3_sys */
+            compatible = "regulator-fixed";
+            regulator-name = "VDD_1V8_AO";
+            regulator-min-microvolt = <1800000>;
+            regulator-max-microvolt = <1800000>;
+            regulator-always-on;
+            vin-supply = <&vdd_5v0_sys>;
+        };
+
+        vdd_3v3_ao: regulator-vdd-3v3-ao {
+            /* BUCK_5V_PG enable is driven by 5v_sys */
+            compatible = "regulator-fixed";
+            regulator-name = "VDD_3V3_AO";
+            regulator-min-microvolt = <3300000>;
+            regulator-max-microvolt = <3300000>;
+            regulator-always-on;
+            vin-supply = <&vdd_5v0_sys>;
+        };
+
+        hdr40_vdd_3v3: p3768_vdd_3v3_sys: regulator@101 {
+        /* BUCK_3V3_EN enable is driven by button MCU */
+        compatible = "regulator-fixed";
+        regulator-name = "VDD-3V3-SYS";
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+        regulator-always-on;
+    };
+
+        cti_usb_vbus: regulator@200 {
+            compatible = "regulator-fixed";
+            reg = <200>;
+            status = "okay";
+            regulator-name = "cti-usb-vbus";
+            regulator-min-microvolt = <5000000>;
+            regulator-max-microvolt = <5000000>;
+            gpio = <&gpio TEGRA234_MAIN_GPIO(AC, 6) GPIO_ACTIVE_HIGH>;
+            enable-active-high;
+            //regulator-boot-on;
+            regulator-always-on;
+        };
+
+};

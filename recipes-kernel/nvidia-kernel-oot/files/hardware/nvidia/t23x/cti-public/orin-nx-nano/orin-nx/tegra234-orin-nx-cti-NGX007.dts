@@ -1,0 +1,259 @@
+/*
+ * Copyright (c) 2024, Connect Tech Inc.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "tegra234-orin-nx-cti-base.dtsi"
+
+/  {
+    nvidia,dtsfilename = "tegra234-orin-nx-cti-NGX007.dts";
+    model = "CTI Boson + Orin NX";
+
+
+    /** configure gpio10 as wakeup*/
+    gpio-keys {
+        compatible = "gpio-keys";
+        gpio-keys,name = "gpio-keys";
+        status = "okay";
+        forcerecovery {
+            label = "force-recovery";
+            gpios = <&gpio TEGRA234_MAIN_GPIO(G, 0) GPIO_ACTIVE_LOW>;
+            linux,code = <BTN_1>;
+        };
+
+	
+
+        power_key {
+            label = "power-key";
+            gpios = <&gpio_aon TEGRA234_AON_GPIO(EE, 4) GPIO_ACTIVE_LOW>;
+            linux,code = <KEY_POWER>;
+            gpio-key,wakeup;
+        };
+
+    };
+
+        cti_boson_vbus1: regulator@201 {
+            compatible = "regulator-fixed";
+            reg=<201>;
+            regulator-name = "cti-boson-otg-vbus";
+            regulator-min-microvolt = <5000000>;
+            regulator-max-microvolt = <5000000>;
+            gpio = <&gpio TEGRA234_MAIN_GPIO(AC, 6) 0>;
+            enable-active-high;
+            regulator-always-on;
+        };
+
+
+    bus@0{
+
+
+	serial@3110000 {
+		status = "okay";
+	};
+	serial@3100000 {
+		status = "okay";
+	};
+
+        can_clock: can_clock{
+            compatible = "fixed-clock";
+            #clock-cells = <0>;
+            clock-frequency = <20000000>;
+            clock-accuracy = <100>;
+        };
+
+        i2c@c250000 {
+            status="okay";
+            clock-frequency = <100000>;
+            tca9539_74: tca9539@74 {
+                compatible = "ti,tca9539";
+                gpio-controller;
+                #gpio-cells = <2>;
+                reg = <0x74>;
+                vcc-supply = <&vdd_1v8_ao>;
+                status = "okay";
+                gpio-line-names = "gpio-3.3v-0", "gpio-3.3v-1", "gpio-3.3v-2",
+                "gpio-3.3v-3", "gpio-3.3v-4", "gpio-3.3v-5";
+             };
+        };
+    spi@3230000{ /* SPI3 in 40 pin conn */
+        status = "okay";
+    };
+
+    mttcan@c310000{
+        status = "okay";
+    };
+
+    //mcp2517
+    spi@3210000{ 
+        status = "okay";
+    };
+
+
+    gpio@2200000 {
+        /*mcp2517-rx-int {
+            status="okay";
+            gpio-hog;
+            input;
+            gpios=<TEGRA234_MAIN_GPIO(Q, 2) 0>;
+            label="mcp2517-rx-int";
+        };*/
+
+        //on RevA this enables/disables all usbs on Rev C it just controls usb2_1
+        //it was originally intended to be a regulator, but because of revA we are
+        //momentarily keeping it as a gpio decoupled from usb2_1's node
+        usb-2-vbus-gpio{  //usb-2 on the enclosure
+            status="okay";
+            gpio-hog;
+            output-high;
+            gpios=<TEGRA234_MAIN_GPIO(Q, 6) GPIO_ACTIVE_HIGH>;
+            label="usb-2-vbus-gpio";
+
+        };
+    };
+    /**define KSZ9897 switch i2c-1*/
+    /*i2c@c240000 {
+        status = "okay";
+        ksz9897@5f{
+            compatible = "microchip,ksz9897";
+            reg=<0x5f>;
+            status="okay";
+            ports{
+                #address-cells = <1>;
+                #size-cells = <0>;
+
+                port@0{
+                    reg = <0>;
+                    label = "CON_GBE";
+                };
+
+                port@1{
+                    reg = <1>;
+                    label = "MODULE_INT";
+                    fixed-link{
+                        speed=<1000>;
+                        full-duplex;
+                    };
+                };
+
+                port@2{
+                    reg = <2>;
+                    label = "M12_GBE2";
+                };
+
+
+                port@3{
+                    reg = <3>;
+                    label = "M12_GBE3";
+                };
+
+            };
+        };
+    };*/
+
+
+    i2c@3160000{
+	status = "okay";
+       	hd3ss3220@67 {
+		status = "okay";
+		reg = <0x67>;
+		compatible = "ti,hd3ss3220";
+	}; 
+    };
+
+//    padctl@3520000 {
+//        status = "okay";
+//        pads {
+//            usb2 {
+//                lanes {
+//                    usb2-0 {
+//                        nvidia,function = "xusb";
+//                        vbus-supply = <&cti_boson_vbus1>;
+//                        status = "okay";
+//                    };
+//                    usb2-1 {
+//                        nvidia,function = "xusb";
+//                        status = "okay";
+//                    };
+//                    usb2-2 {
+//                        nvidia,function = "xusb";
+//                        status = "okay";
+//                    };
+//                };
+//            };
+//            usb3 {
+//                lanes {
+//                    usb3-0 {
+//                        nvidia,function = "xusb";
+//                        status = "okay";
+//                    };
+//                    usb3-2 {
+//                        nvidia,function = "xusb";
+//                        status = "okay";
+//                    };
+//                };
+//            };
+//        };
+//        ports {
+//            usb2-0 {
+//                mode = "otg";
+//                status = "okay";
+//                vbus-supply = <&cti_boson_vbus1>;
+//                usb-role-switch;
+//                /delete-node/ connector;
+//                connector {
+//                    /* NOTE: PN: While the Physical connector is Type-C we are using the
+//                     * microUSB driver as the HW uses the older OTG_ID/VBUS_DET gpio
+//                     * for indicating role switchs
+//                     */
+//                    compatible = "gpio-usb-b-connector", "usb-b-connector";
+//                    label = "micro-USB";
+//                    type = "micro";
+//                    vbus-gpios = <&gpio TEGRA234_MAIN_GPIO(Z, 1) GPIO_ACTIVE_HIGH>;
+//                    id-gpios = <&gpio_aon TEGRA234_AON_GPIO(EE, 2) GPIO_ACTIVE_HIGH>;
+//                };
+//
+//            };
+//            usb2-1 {
+//                mode = "host";
+//                status = "okay";
+//            };
+//            usb2-2 {/* Goes to M2.E */
+//                mode = "host";
+//                status = "okay";
+//            };
+//            usb3-0 {
+//                nvidia,usb2-companion = <0>;
+//                status = "okay";
+//            };
+//            usb3-2{
+//                nvidia,usb2-companion = <2>;
+//                status = "okay";
+//            };
+//        };
+//    };
+//    usb@3550000 {
+//        status = "okay";
+//        phys =  <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-0}>;
+//        phy-names = "usb2-0","usb3-2";
+//    };
+
+    //pcie limit 3rd gen
+    //14160000 Limit max of NVMe port to gen 3 to avoid AER errors
+    pcie@14160000{
+        max-link-speed=<0x3>;
+    };
+
+    };
+
+};
