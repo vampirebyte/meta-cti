@@ -1,0 +1,122 @@
+/*
+ * Copyright (c) 2024, Connect Tech Inc.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "tegra234-orin-nx-cti-base.dtsi"
+
+/{
+    nvidia,dtsfilename = "tegra234-orin-nx-cti-NGX020.dts";
+
+    model = "CTI Boson for Orin  + Orin NX";
+
+bus@0{   
+    //PTN5150
+    i2c@3160000{
+        ptn5150@3d{
+            reg = <0x3d>;
+            compatible = "cti,ptn5150";
+            status = "okay";
+            interrupt-parent = <&gpio>;
+            interrupts = <TEGRA234_MAIN_GPIO(Z, 1) IRQ_TYPE_LEVEL_LOW>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+            
+            connector@0 {
+                compatible = "usb-c-connector";
+                label = "USB-C";
+                data-role = "dual";
+
+                //Supported Advertised Current Modes: "default" (900mA), "1.5A", "3.0A"
+                power-opmode = "1.5A";
+            
+                        //HighSpeed
+                       port@0 {
+                           reg = <0>;
+                           ptn5150_hs_ep_p0: endpoint {
+                               remote-endpoint = <&hs_typec_p0>;
+                           };
+                       };
+                       //SuperSpeed
+                       port@1 {
+                           reg = <1>;
+                           ptn5150_ss_ep_p0: endpoint {
+                               remote-endpoint = <&ss_typec_p0>;
+                           };
+                       };
+                
+                        
+                };
+
+        };
+    };
+padctl@3520000 {
+        ports {
+            usb2-0 {
+                    
+                    /delete-node/ connector;
+                    port{
+                        hs_typec_p0: endpoint {
+                            remote-endpoint = <&ptn5150_hs_ep_p0>;
+                        };
+                        
+                    };
+            };
+            usb3-0 {
+                    port {
+                        ss_typec_p0: endpoint {
+                            remote-endpoint = <&ptn5150_ss_ep_p0>;
+                        };
+                    };                
+            };
+        };
+};
+    // UART 0 /dev/ttyTHS1
+    serial@3110000 {
+        status = "okay";
+    };
+    // UART 1 /dev/ttyTHS0
+    serial@3100000 {/* UARTA, for 40 pin header */
+        status = "okay";
+    };
+    i2c@c250000{
+          gpio_i2c_8_74: gpio@74 {
+                    status = "okay";
+                    compatible = "ti,tca9539";
+                    reg = <0x74>;
+                    gpio-controller;
+                    #gpio-cells = <2>;
+                    #address-cells = <1>;
+                    #size-cells = <0>;
+                    vcc-supply = <&vdd_3v3_ao>;
+                    gpio-line-names = "gpio-3.3v-0", "gpio-3.3v-1", "gpio-3.3v-2",
+                    "gpio-3.3v-3", "gpio-3.3v-4", "gpio-3.3v-5";
+    	   }; 
+    };
+//PCIE2 =  PEX7
+    pcie@141e0000 {
+        
+        /*
+         * C7 - M2 Key M, default config, other config possible as
+         * below:
+         * C7 x2 - default
+         * C7 x1 or C9 x1
+         */
+        status = "okay";
+        phys = <&p2u_gbe_0>;
+        phy-names = "p2u-0";
+    };
+};
+};
+
