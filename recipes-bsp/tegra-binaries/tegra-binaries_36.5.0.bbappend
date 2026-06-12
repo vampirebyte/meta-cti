@@ -9,5 +9,5 @@ deltask preconfigure
 addtask preconfigure after do_unpack before do_patch
 
 do_preconfigure:append () {
-    cp -rv ${WORKDIR}/sources-unpack/bootloader/* ${S}/bootloader/
+    cp -rv ${WORKDIR}/bootloader/* ${S}/bootloader/
 }
