@@ -8,6 +8,7 @@ deltask preconfigure
 # Re-add it with correct dependencies
 addtask preconfigure after do_unpack before do_patch
 
+# scarthgap predates UNPACKDIR (styhead+): file:// sources unpack into WORKDIR
 do_preconfigure:append () {
-    cp -rv ${WORKDIR}/sources-unpack/bootloader/* ${S}/bootloader/
+    cp -rv ${@d.getVar('UNPACKDIR') or d.getVar('WORKDIR')}/bootloader/* ${S}/bootloader/
 }
